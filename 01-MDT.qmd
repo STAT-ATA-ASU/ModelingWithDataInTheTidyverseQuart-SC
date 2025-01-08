@@ -1,0 +1,270 @@
+# Introduction to Modeling {#intro}
+
+```{r include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.align = "center", fig.width = 4, fig.height = 4, message = FALSE, warning = FALSE)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+# Parallel Processing
+library(doMC)
+registerDoMC(cores = 20)
+```
+
+This chapter will introduce you to some background theory and terminology for modeling, in particular, the general modeling framework, the difference between modeling for explanation and modeling for prediction, and the modeling problem. Furthermore, you'll start performing your first exploratory data analysis, a crucial first step before any formal modeling.
+
+
+
+## Background on modeling for explanation - (video) {-}
+
+<iframe src="https://drive.google.com/file/d/1X_XYrwIlx5l20I5FnvfIca0Io4YIirlp/preview" width="640" height="480">
+</iframe>
+
+
+
+## Exploratory visualization of age
+
+Let's perform an exploratory data analysis (EDA) of the numerical explanatory variable `age`. You should always perform an exploratory analysis of your variables before any formal modeling. This will give you a sense of your variable's distributions, any outliers, and any patterns that might be useful when constructing your eventual model.
+
+-   Use the `evals` data set from the `moderndive` package along with `ggplot2` to create a histogram of `age` with bins in 5 year increments.
+
+-   Label the `x` axis with `age` and the `y` axis with count.
+
+```{r}
+# Load packages
+library(moderndive)
+library(ggplot2)
+
+# Plot the histogram
+ggplot(evals, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = "skyblue", color = "black") +
+  labs(x = "age", y = "count") + 
+  theme_bw()
+```
+
+## Numerical summaries of age
+
+Let's continue our exploratory data analysis of the numerical explanatory variable `age` by computing summary statistics. Summary statistics take many values and summarize them with a single value. Let's compute three such values using `dplyr` data wrangling: mean (AKA the average), the median (the middle value), and the standard deviation (a measure of spread/variation).
+
+-   Calculate the mean, median, and standard deviation of `age`.
+
+```{r}
+# Load packages
+library(moderndive)
+library(dplyr)
+
+# Compute summary stats
+evals |> 
+  summarize(mean_age = mean(age),
+            median_age = median(age),
+            sd_age = sd(age),
+            iqr = IQR(age),
+            e1071::skewness(age)) |>
+  kable()
+```
+
+------------------------------------------------------------------------
+
+## Background on modeling for prediction - (video) {-}
+
+<iframe src="https://drive.google.com/file/d/10FYsRhRVOa7RAS2SBj3MurJBCILDIE3k/preview" width="640" height="480">
+
+</iframe>
+
+
+## Exploratory visualization of house size
+
+Let's create an exploratory visualization of the predictor variable reflecting the size of houses: `sqft_living` the square footage of living space where 1 sq.foot $\approx$ 0.1 sq.meter.
+
+After plotting the histogram, what can you say about the distribution of the variable `sqft_living`?
+
+-   Create a histogram of `sqft_living` using the `house_prices` data set from the `moderndive` package.
+
+-   Label the `x` axis with `"Size (sq.feet)"` and the `y` axis with `"count"`.
+
+```{r}
+# Plot the histogram
+ggplot(house_prices, aes(x = sqft_living)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  labs(x = "Size (sq.feet)", y = "count") + 
+  theme_bw()
+```
+
+
+## Log10 transformation of house size
+
+You just saw that the predictor variable `sqft_living` is right-skewed and hence a log base 10 transformation is warranted to unskew it. Just as we transformed the outcome variable price to create `log10_price` in the video, let's do the same for `sqft_living`.
+
+-   Using the `mutate()` function from `dplyr`, create a new column `log10_size` and assign it to `house_prices_2` by applying a `log10()` transformation to `sqft_living`.
+
+```{r}
+# Add log10_size
+house_prices_2 <- house_prices |> 
+  mutate(log10_size = log10(sqft_living))
+```
+
+-   Visualize the effect of the `log10()` transformation by creating a histogram of the new variable `log10_size`.
+
+```{r}
+#| label: "fig-hist"
+#| fig.cap: "Histogram of log10 transformed data"
+# Plot the histogram 
+ggplot(house_prices_2, aes(x = log10_size)) +
+  geom_histogram(fill = "skyblue", color = "black") +
+  labs(x = "log10 size", y = "count") + 
+  theme_bw()
+```
+
+Notice how the distribution is much less skewed in @fig-hist. Going forward, you will use this new transformed variable to represent the size of houses.
+
+
+## The modeling problem for explanation - (video) {-}
+
+<iframe src="https://drive.google.com/file/d/1X8_zdpPmY9GeX9cbzi4AmxDDzDcpFhCT/preview" width="640" height="480">
+
+</iframe>
+
+## EDA of relationship of teaching & "beauty" scores
+
+The researchers in the UT Austin created a "beauty score" by asking a panel of 6 students to rate the "beauty" of all 463 instructors. They were interested in studying any possible impact of "beauty" of teaching evaluation scores. Let's do an EDA of this variable and its relationship with teaching `score`. The data are stored in the `evals` data frame from the `moderndive` package.
+
+From now on, assume that `ggplot2`, `dplyr`, and `moderndive` are all available in your workspace unless you're told otherwise.
+
+-   Create a histogram of `bty_avg` "beauty scores" with bins of size 0.5.
+
+```{r}
+### Plot the histogram
+ggplot(evals, aes(x = bty_avg)) +
+  geom_histogram(color = "black", fill = "red", binwidth = 0.5) +
+  labs(x = "Beauty score", y = "count") + 
+  theme_bw()
+```
+
+-   Create a scatterplot with the outcome variable `score` on the y-axis and the explanatory variable `bty_avg` on the x-axis.
+
+```{r}
+# Scatterplot
+ggplot(evals, aes(x = bty_avg, y = score)) +
+  geom_point() +
+  labs(x = "beauty score", y = "teaching score") + 
+  theme_bw()
+```
+
+-   Let's now investigate if this plot suffers from overplotting, whereby points are stacked perfectly on top of each other, obscuring the number of points involved. You can do this by jittering the points. Update the code accordingly!
+
+```{r}
+# Jitter plot
+ggplot(evals, aes(x = bty_avg, y = score)) +
+  geom_jitter() +
+  labs(x = "beauty score", y = "teaching score") + 
+  theme_bw()
+```
+
+It seems the original scatterplot did suffer from overplotting since the jittered scatterplot reveals many originally hidden points. Most `bty_avg` scores range from 2-8, with 5 being about the center.
+
+## Correlation between teaching and "beauty" scores
+
+Let's numerically summarize the relationship between teaching score and beauty score `bty_avg` using the correlation coefficient. Based on this, what can you say about the relationship between these two variables?
+
+-   Compute the correlation coefficient of `score` and `bty_avg`.
+
+```{r}
+# Compute correlation
+evals %>%
+  summarize(correlation = cor(score, bty_avg)) -> tr
+tr
+```
+
+-   Highlight the appropriate answer:
+
+    -   `score` and `bty_avg` are strongly negatively associated.
+
+    -   `score` and `bty_avg` are weakly negatively associated.
+
+    -   **`score` and `bty_avg` are weakly positively associated.**
+
+    -   `score` and `bty_avg` are strongly positively associated.
+
+While there seems to be a positive relationship, `r round(tr$correlation,3)` is still a long ways from 1, so the correlation is only weakly positive.
+
+
+## The modeling problem for prediction - (video) {-}
+
+<iframe src="https://drive.google.com/file/d/1Sd8iMPF3GAXn7EPND4XTHTXw_qX_oCZ2/preview" width="640" height="480">
+
+</iframe>
+
+
+## EDA of relationship of house price and waterfront
+
+Let's now perform an exploratory data analysis of the relationship between `log10_price`, the log base 10 house price, and the binary variable `waterfront`. Let's look at the raw values of waterfront and then visualize their relationship.
+
+The column `log10_price` has been added for you in the `house_prices` dataset.
+
+```{r}
+house_prices |> 
+  mutate(log10_price = log10(price)) -> house_prices
+```
+
+-   Use `glimpse()` to view the structure of only two columns: `log10_price` and `waterfront`.
+
+```{r}
+# View the structure of log10_price and waterfront
+house_prices |> 
+  select(log10_price, waterfront) |> 
+  glimpse()
+```
+
+-   Visualize the relationship between `waterfront` and `log10_price` using an appropriate `geom_*` function. Remember that `waterfront` is categorical.
+
+```{r}
+# Plot 
+ggplot(house_prices, aes(x = waterfront, y = log10_price)) +
+  geom_boxplot() +
+  labs(x = "waterfront", y = "log10 price") +
+  theme_bw()
+```
+
+Look at that boxplot! Houses that have a view of the waterfront tend to be MUCH more expensive as evidenced by the much higher log10 prices!
+
+```{r}
+ggplot(data = house_prices, aes(x = log10_price, color = waterfront)) +
+  geom_density() + 
+  theme_bw()
+```
+
+## Predicting house price with waterfront
+
+You just saw that houses with a view of the `waterfront` tend to be much more expensive. But by how much? Let's compute group means of `log10_price`, convert them back to dollar units, and compare!
+
+-   Return both the mean of `log10_price` and the count of houses in each level of `waterfront`
+
+```{r}
+# Calculate stats
+house_prices |> 
+  group_by(waterfront) |> 
+  summarize(mean_log10_price = mean(log10_price), n = n()) -> hp
+hp |> 
+  kable()
+```
+
+-   Using these group means for `log10_price`, return "good" predicted house prices in the original units of US dollars.
+
+```{r}
+# Prediction of price for houses with view
+10^(6.12)
+10^hp$mean_log10_price[1]
+# Prediction of price for houses without view
+10^(5.66)
+10^hp$mean_log10_price[2]
+## Or
+house_prices |> 
+  group_by(waterfront) |> 
+  summarize(mean_log10_price = mean(log10_price), n = n()) |>  
+  mutate(pred_price = 10^mean_log10_price) -> hp2
+hp2 |> 
+  kable()
+```
+
+Most houses don't have a view of the `waterfront` ($n = `r scales::comma(hp2$n[1])`$), but those that do ($n =`r scales::comma(hp2$n[2])`$) have a MUCH higher predicted price. Look at that difference! `r scales::dollar(hp2$pred_price[1])` versus `r scales::dollar(hp2$pred_price[2])`! In the upcoming Chapter 2 on basic regression, we'll build on such intuition and construct our first formal explanatory and predictive models using basic regression!
+

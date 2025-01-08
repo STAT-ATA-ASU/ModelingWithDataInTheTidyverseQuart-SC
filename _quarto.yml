@@ -1,0 +1,33 @@
+project:
+  type: book
+
+book:
+  title: "[Modeling With Data In The Tidyverse](https://www.datacamp.com/courses/modeling-with-data-in-the-tidyverse)"
+  author: "[Your Name Here](your web url here)"
+  date: last-modified
+  date-format: "[Last modified on] MMMM DD, YYYY HH:mm:ss zzz"
+  chapters:
+    - index.qmd
+    - 01-MDT.qmd
+    - 02-MDT.qmd
+    #- 03-MDT.qmd
+    #- 04-MDT.qmd
+    - references.qmd
+
+execute:
+  warning: false
+
+
+bibliography: packages.bib
+
+format:
+  html:
+    theme: pulse
+    fig-width: 4
+    fig-height: 4
+    fig-align: "center"
+  pdf:
+    documentclass: scrreprt
+
+editor: source
+

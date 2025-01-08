@@ -1,0 +1,100 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Modeling With Data In The Tidyverse",
+    "section": "",
+    "text": "Preface\nThis material is from the DataCamp course Modeling with Data in the Tidyverse by Albert Y. Kim.\nCourse Description: In this course, you will learn to model with data. Models attempt to capture the relationship between an outcome variable of interest and a series of explanatory/predictor variables. Such models can be used for both explanatory purposes, e.g. “Does knowing professors’ ages help explain their teaching evaluation scores?”, and predictive purposes, e.g., “How well can we predict a house’s price based on its size and condition?” You will leverage your tidyverse skills to construct and interpret such models. This course centers around the use of linear regression, one of the most commonly-used and easy to understand approaches to modeling. Such modeling and thinking is used in a wide variety of fields, including statistics, causal inference, machine learning, and artificial intelligence.\nReminder to self: each *.qmd file contains one and only one chapter, and a chapter is defined by the first-level heading #."
+  },
+  {
+    "objectID": "01-MDT.html#background-on-modeling-for-explanation---video",
+    "href": "01-MDT.html#background-on-modeling-for-explanation---video",
+    "title": "1  Introduction to Modeling",
+    "section": "Background on modeling for explanation - (video)",
+    "text": "Background on modeling for explanation - (video)"
+  },
+  {
+    "objectID": "01-MDT.html#exploratory-visualization-of-age",
+    "href": "01-MDT.html#exploratory-visualization-of-age",
+    "title": "1  Introduction to Modeling",
+    "section": "1.1 Exploratory visualization of age",
+    "text": "1.1 Exploratory visualization of age\nLet’s perform an exploratory data analysis (EDA) of the numerical explanatory variable age. You should always perform an exploratory analysis of your variables before any formal modeling. This will give you a sense of your variable’s distributions, any outliers, and any patterns that might be useful when constructing your eventual model.\n\nUse the evals data set from the moderndive package along with ggplot2 to create a histogram of age with bins in 5 year increments.\nLabel the x axis with age and the y axis with count.\n\n\n# Load packages\nlibrary(moderndive)\nlibrary(ggplot2)\n\n# Plot the histogram\nggplot(evals, aes(x = age)) +\n  geom_histogram(binwidth = 5, fill = \"skyblue\", color = \"black\") +\n  labs(x = \"age\", y = \"count\") + \n  theme_bw()"
+  },
+  {
+    "objectID": "01-MDT.html#numerical-summaries-of-age",
+    "href": "01-MDT.html#numerical-summaries-of-age",
+    "title": "1  Introduction to Modeling",
+    "section": "1.2 Numerical summaries of age",
+    "text": "1.2 Numerical summaries of age\nLet’s continue our exploratory data analysis of the numerical explanatory variable age by computing summary statistics. Summary statistics take many values and summarize them with a single value. Let’s compute three such values using dplyr data wrangling: mean (AKA the average), the median (the middle value), and the standard deviation (a measure of spread/variation).\n\nCalculate the mean, median, and standard deviation of age.\n\n\n# Load packages\nlibrary(moderndive)\nlibrary(dplyr)\n\n# Compute summary stats\nevals |&gt; \n  summarize(mean_age = mean(age),\n            median_age = median(age),\n            sd_age = sd(age),\n            iqr = IQR(age),\n            e1071::skewness(age)) |&gt;\n  kable()\n\n\n\n\nmean_age\nmedian_age\nsd_age\niqr\ne1071::skewness(age)\n\n\n\n\n48.36501\n48\n9.802742\n15\n0.0483567"
+  },
+  {
+    "objectID": "01-MDT.html#background-on-modeling-for-prediction---video",
+    "href": "01-MDT.html#background-on-modeling-for-prediction---video",
+    "title": "1  Introduction to Modeling",
+    "section": "Background on modeling for prediction - (video)",
+    "text": "Background on modeling for prediction - (video)"
+  },
+  {
+    "objectID": "01-MDT.html#exploratory-visualization-of-house-size",
+    "href": "01-MDT.html#exploratory-visualization-of-house-size",
+    "title": "1  Introduction to Modeling",
+    "section": "1.3 Exploratory visualization of house size",
+    "text": "1.3 Exploratory visualization of house size\nLet’s create an exploratory visualization of the predictor variable reflecting the size of houses: sqft_living the square footage of living space where 1 sq.foot \\(\\approx\\) 0.1 sq.meter.\nAfter plotting the histogram, what can you say about the distribution of the variable sqft_living?\n\nCreate a histogram of sqft_living using the house_prices data set from the moderndive package.\nLabel the x axis with \"Size (sq.feet)\" and the y axis with \"count\".\n\n\n# Plot the histogram\nggplot(house_prices, aes(x = sqft_living)) +\n  geom_histogram(fill = \"skyblue\", color = \"black\") +\n  labs(x = \"Size (sq.feet)\", y = \"count\") + \n  theme_bw()"
+  },
+  {
+    "objectID": "01-MDT.html#log10-transformation-of-house-size",
+    "href": "01-MDT.html#log10-transformation-of-house-size",
+    "title": "1  Introduction to Modeling",
+    "section": "1.4 Log10 transformation of house size",
+    "text": "1.4 Log10 transformation of house size\nYou just saw that the predictor variable sqft_living is right-skewed and hence a log base 10 transformation is warranted to unskew it. Just as we transformed the outcome variable price to create log10_price in the video, let’s do the same for sqft_living.\n\nUsing the mutate() function from dplyr, create a new column log10_size and assign it to house_prices_2 by applying a log10() transformation to sqft_living.\n\n\n# Add log10_size\nhouse_prices_2 &lt;- house_prices |&gt; \n  mutate(log10_size = log10(sqft_living))\n\n\nVisualize the effect of the log10() transformation by creating a histogram of the new variable log10_size.\n\n\n# Plot the histogram \nggplot(house_prices_2, aes(x = log10_size)) +\n  geom_histogram(fill = \"skyblue\", color = \"black\") +\n  labs(x = \"log10 size\", y = \"count\") + \n  theme_bw()\n\n\n\n\nFigure 1.1: Histogram of log10 transformed data\n\n\n\n\nNotice how the distribution is much less skewed in Figure 1.1. Going forward, you will use this new transformed variable to represent the size of houses."
+  },
+  {
+    "objectID": "01-MDT.html#the-modeling-problem-for-explanation---video",
+    "href": "01-MDT.html#the-modeling-problem-for-explanation---video",
+    "title": "1  Introduction to Modeling",
+    "section": "The modeling problem for explanation - (video)",
+    "text": "The modeling problem for explanation - (video)"
+  },
+  {
+    "objectID": "01-MDT.html#eda-of-relationship-of-teaching-beauty-scores",
+    "href": "01-MDT.html#eda-of-relationship-of-teaching-beauty-scores",
+    "title": "1  Introduction to Modeling",
+    "section": "1.5 EDA of relationship of teaching & “beauty” scores",
+    "text": "1.5 EDA of relationship of teaching & “beauty” scores\nThe researchers in the UT Austin created a “beauty score” by asking a panel of 6 students to rate the “beauty” of all 463 instructors. They were interested in studying any possible impact of “beauty” of teaching evaluation scores. Let’s do an EDA of this variable and its relationship with teaching score. The data are stored in the evals data frame from the moderndive package.\nFrom now on, assume that ggplot2, dplyr, and moderndive are all available in your workspace unless you’re told otherwise.\n\nCreate a histogram of bty_avg “beauty scores” with bins of size 0.5.\n\n\n### Plot the histogram\nggplot(evals, aes(x = bty_avg)) +\n  geom_histogram(color = \"black\", fill = \"red\", binwidth = 0.5) +\n  labs(x = \"Beauty score\", y = \"count\") + \n  theme_bw()\n\n\n\n\n\n\n\n\n\nCreate a scatterplot with the outcome variable score on the y-axis and the explanatory variable bty_avg on the x-axis.\n\n\n# Scatterplot\nggplot(evals, aes(x = bty_avg, y = score)) +\n  geom_point() +\n  labs(x = \"beauty score\", y = \"teaching score\") + \n  theme_bw()\n\n\n\n\n\n\n\n\n\nLet’s now investigate if this plot suffers from overplotting, whereby points are stacked perfectly on top of each other, obscuring the number of points involved. You can do this by jittering the points. Update the code accordingly!\n\n\n# Jitter plot\nggplot(evals, aes(x = bty_avg, y = score)) +\n  geom_jitter() +\n  labs(x = \"beauty score\", y = \"teaching score\") + \n  theme_bw()\n\n\n\n\n\n\n\n\nIt seems the original scatterplot did suffer from overplotting since the jittered scatterplot reveals many originally hidden points. Most bty_avg scores range from 2-8, with 5 being about the center."
+  },
+  {
+    "objectID": "01-MDT.html#correlation-between-teaching-and-beauty-scores",
+    "href": "01-MDT.html#correlation-between-teaching-and-beauty-scores",
+    "title": "1  Introduction to Modeling",
+    "section": "1.6 Correlation between teaching and “beauty” scores",
+    "text": "1.6 Correlation between teaching and “beauty” scores\nLet’s numerically summarize the relationship between teaching score and beauty score bty_avg using the correlation coefficient. Based on this, what can you say about the relationship between these two variables?\n\nCompute the correlation coefficient of score and bty_avg.\n\n\n# Compute correlation\nevals %&gt;%\n  summarize(correlation = cor(score, bty_avg)) -&gt; tr\ntr\n\n# A tibble: 1 × 1\n  correlation\n        &lt;dbl&gt;\n1       0.187\n\n\n\nHighlight the appropriate answer:\n\nscore and bty_avg are strongly negatively associated.\nscore and bty_avg are weakly negatively associated.\nscore and bty_avg are weakly positively associated.\nscore and bty_avg are strongly positively associated.\n\n\nWhile there seems to be a positive relationship, 0.187 is still a long ways from 1, so the correlation is only weakly positive."
+  },
+  {
+    "objectID": "01-MDT.html#the-modeling-problem-for-prediction---video",
+    "href": "01-MDT.html#the-modeling-problem-for-prediction---video",
+    "title": "1  Introduction to Modeling",
+    "section": "The modeling problem for prediction - (video)",
+    "text": "The modeling problem for prediction - (video)"
+  },
+  {
+    "objectID": "01-MDT.html#eda-of-relationship-of-house-price-and-waterfront",
+    "href": "01-MDT.html#eda-of-relationship-of-house-price-and-waterfront",
+    "title": "1  Introduction to Modeling",
+    "section": "1.7 EDA of relationship of house price and waterfront",
+    "text": "1.7 EDA of relationship of house price and waterfront\nLet’s now perform an exploratory data analysis of the relationship between log10_price, the log base 10 house price, and the binary variable waterfront. Let’s look at the raw values of waterfront and then visualize their relationship.\nThe column log10_price has been added for you in the house_prices dataset.\n\nhouse_prices |&gt; \n  mutate(log10_price = log10(price)) -&gt; house_prices\n\n\nUse glimpse() to view the structure of only two columns: log10_price and waterfront.\n\n\n# View the structure of log10_price and waterfront\nhouse_prices |&gt; \n  select(log10_price, waterfront) |&gt; \n  glimpse()\n\nRows: 21,613\nColumns: 2\n$ log10_price &lt;dbl&gt; 5.346157, 5.730782, 5.255273, 5.781037, 5.707570, 6.088136…\n$ waterfront  &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FA…\n\n\n\nVisualize the relationship between waterfront and log10_price using an appropriate geom_* function. Remember that waterfront is categorical.\n\n\n# Plot \nggplot(house_prices, aes(x = waterfront, y = log10_price)) +\n  geom_boxplot() +\n  labs(x = \"waterfront\", y = \"log10 price\") +\n  theme_bw()\n\n\n\n\n\n\n\n\nLook at that boxplot! Houses that have a view of the waterfront tend to be MUCH more expensive as evidenced by the much higher log10 prices!\n\nggplot(data = house_prices, aes(x = log10_price, color = waterfront)) +\n  geom_density() + \n  theme_bw()"
+  },
+  {
+    "objectID": "01-MDT.html#predicting-house-price-with-waterfront",
+    "href": "01-MDT.html#predicting-house-price-with-waterfront",
+    "title": "1  Introduction to Modeling",
+    "section": "1.8 Predicting house price with waterfront",
+    "text": "1.8 Predicting house price with waterfront\nYou just saw that houses with a view of the waterfront tend to be much more expensive. But by how much? Let’s compute group means of log10_price, convert them back to dollar units, and compare!\n\nReturn both the mean of log10_price and the count of houses in each level of waterfront\n\n\n# Calculate stats\nhouse_prices |&gt; \n  group_by(waterfront) |&gt; \n  summarize(mean_log10_price = mean(log10_price), n = n()) -&gt; hp\nhp |&gt; \n  kable()\n\n\n\n\nwaterfront\nmean_log10_price\nn\n\n\n\n\nFALSE\n5.663114\n21450\n\n\nTRUE\n6.124689\n163\n\n\n\n\n\n\nUsing these group means for log10_price, return “good” predicted house prices in the original units of US dollars.\n\n\n# Prediction of price for houses with view\n10^(6.12)\n\n[1] 1318257\n\n10^hp$mean_log10_price[1]\n\n[1] 460377.2\n\n# Prediction of price for houses without view\n10^(5.66)\n\n[1] 457088.2\n\n10^hp$mean_log10_price[2]\n\n[1] 1332567\n\n## Or\nhouse_prices |&gt; \n  group_by(waterfront) |&gt; \n  summarize(mean_log10_price = mean(log10_price), n = n()) |&gt;  \n  mutate(pred_price = 10^mean_log10_price) -&gt; hp2\nhp2 |&gt; \n  kable()\n\n\n\n\nwaterfront\nmean_log10_price\nn\npred_price\n\n\n\n\nFALSE\n5.663114\n21450\n460377.2\n\n\nTRUE\n6.124689\n163\n1332566.9\n\n\n\n\n\nMost houses don’t have a view of the waterfront (\\(n = 21,450\\)), but those that do (\\(n =163\\)) have a MUCH higher predicted price. Look at that difference! $460,377 versus $1,332,567! In the upcoming Chapter 2 on basic regression, we’ll build on such intuition and construct our first formal explanatory and predictive models using basic regression!"
+  },
+  {
+    "objectID": "02-MDT.html",
+    "href": "02-MDT.html",
+    "title": "2  Modeling with Basic Regression",
+    "section": "",
+    "text": "Equipped with your understanding of the general modeling framework, in this chapter, we will cover basic linear regression where you will keep things simple and model the outcome variable y as a function of a single explanatory/ predictor variable x. We will use both numerical and categorical x variables. The outcome variable of interest in this chapter will be teaching evaluation scores of instructors at the University of Texas, Austin."
+  }
+]
