@@ -21,7 +21,9 @@ execute:
 bibliography: packages.bib
 
 format:
-  html:
+  html: 
+    axe:
+    output: document
     theme: pulse
     fig-width: 4
     fig-height: 4

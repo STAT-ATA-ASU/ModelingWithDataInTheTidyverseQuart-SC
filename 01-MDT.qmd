@@ -8,7 +8,7 @@ library(dplyr)
 library(knitr)
 # Parallel Processing
 library(doMC)
-registerDoMC(cores = 20)
+registerDoMC(cores = 12)
 ```
 
 This chapter will introduce you to some background theory and terminology for modeling, in particular, the general modeling framework, the difference between modeling for explanation and modeling for prediction, and the modeling problem. Furthermore, you'll start performing your first exploratory data analysis, a crucial first step before any formal modeling.

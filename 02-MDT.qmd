@@ -8,7 +8,7 @@ library(dplyr)
 library(knitr)
 # Parallel Processing
 library(doMC)
-registerDoMC(cores = 20)
+registerDoMC(cores = 12)
 ```
 
 Equipped with your understanding of the general modeling framework, in this chapter, we will cover basic linear regression where you will keep things simple and model the outcome variable y as a function of a single explanatory/ predictor variable x. We will use both numerical and categorical x variables. The outcome variable of interest in this chapter will be teaching evaluation scores of instructors at the University of Texas, Austin.
